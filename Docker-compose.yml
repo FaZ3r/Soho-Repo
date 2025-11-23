@@ -37,3 +37,13 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./portainer_data:/data
+
+  motioneye:
+    image: ccrisan/motioneye:master-amd64
+    container_name: motioneye
+    restart: always
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./motioneye/etc:/etc/motioneye
+      - ./motioneye/var:/var/lib/motioneye
