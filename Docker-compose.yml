@@ -38,12 +38,36 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./portainer_data:/data
 
-  motioneye:
-    image: ccrisan/motioneye:master-amd64
-    container_name: motioneye
+  mqtt:
+    container_name: mqtt
+    image: eclipse-mosquitto:2.0
     restart: always
-    ports:
-      - "8765:8765"
     volumes:
-      - ./motioneye/etc:/etc/motioneye
-      - ./motioneye/var:/var/lib/motioneye
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"
+
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:stable
+    restart: always
+    privileged: true
+    shm_size: "256mb"
+    ports:
+      - "5000:5000"   
+      - "8554:8554"   
+      - "1935:1935"   
+    devices:
+      - /dev/dri:/dev/dri   # hardware accel
+    volumes:
+      - ./frigate/config:/config
+      - ./frigate/media:/media
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 2000000000
+    environment:
+      - FRIGATE_RTSP_PASSWORD=
+      - FRIGATE_HWACCEL_ARGS=-hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format nv12
